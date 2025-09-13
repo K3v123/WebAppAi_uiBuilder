@@ -2,6 +2,7 @@ services:
   # Deploy React frontend as static site
   - type: web
     name: ai-app-builder-frontend
+    runtime: static
     buildCommand: |
       cd frontend
       npm install
