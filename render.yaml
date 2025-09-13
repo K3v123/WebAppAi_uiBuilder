@@ -1,0 +1,24 @@
+services:
+  # Deploy React frontend as static site
+  - type: static
+    name: ai-app-builder-frontend
+    buildCommand: |
+      cd frontend
+      npm install
+      npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_BASE
+        value: https://ai-app-builder-backend.onrender.com
+
+  # Deploy Node.js backend as web service
+  - type: web
+    name: ai-app-builder-backend
+    env: node
+    buildCommand: |
+      cd backend
+      npm install
+    startCommand: node server.js
+    envVars:
+      - key: PORT
+        value: 10000

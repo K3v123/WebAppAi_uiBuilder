@@ -57,7 +57,7 @@ coverage/
 # =========================
 # Render / Deployment
 # =========================
-render.yaml
+
 render-config.yaml
 
 
