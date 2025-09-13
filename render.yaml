@@ -1,6 +1,6 @@
 services:
   # Deploy React frontend as static site
-  - type: static
+  - type: web
     name: ai-app-builder-frontend
     buildCommand: |
       cd frontend
