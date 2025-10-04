@@ -1,14 +1,14 @@
 # 🧠 WebApp AI UI Builder
-> *An intern evaluation task — built with heart, AI, and no regrets.*
+> *An intern evaluation task, built with heart and no regrets.*
 
 ![Node.js](https://img.shields.io/badge/Node.js-18%2B-green?logo=node.js)
 ![React](https://img.shields.io/badge/React-18%2B-blue?logo=react)
 ![MongoDB](https://img.shields.io/badge/MongoDB-%E2%9C%93-brightgreen?logo=mongodb)
 ![Gemini AI](https://img.shields.io/badge/Gemini_2.5--Flash-AI_Powered-orange)
 
-Turn plain English app ideas into structured forms — **instantly**. Then, customize the UI with natural language like *"make buttons blue"* or *"darker theme"*. All powered by AI.
+Turn plain English app ideas into structured forms, **instantly**. Then, customize the UI with natural language like *"make buttons blue"* or *"darker theme"*. All powered by AI.
 
-> 💬 *"I failed... I messed up... So I built this with no regrets."*
+> 💬 *"I messed up... So I built what they wanted (improved) with no regrets."*
 
 ## ✨ Features
 
