@@ -8,6 +8,15 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [chatInput, setChatInput] = useState('');
+
+  // Dynamic UI style overrides
+  const [uiStyle, setUiStyle] = useState({
+    formBackground: '#2a2a2a',
+    buttonColor: '#4ade80',
+    fontSize: '1.1rem',
+    borderRadius: '14px'
+  });
 
   const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
 
@@ -41,14 +50,12 @@ function App() {
       });
       setParsedData(response.data);
 
-      // Save to MongoDB
       await axios.post(`${API_BASE}/api/save-app`, {
         ...response.data,
         description
       });
 
       showFeedback("✅ App design generated and saved!", "success");
-
     } catch (err) {
       console.error("Error:", err);
       showFeedback("❌ Failed to generate app. Please try again.", "error");
@@ -57,11 +64,37 @@ function App() {
     }
   };
 
+  const handleChatSubmit = async () => {
+    if (!chatInput.trim() || !parsedData) return;
+
+    setLoading(true);
+    try {
+      const response = await axios.post(`${API_BASE}/api/customize-ui`, {
+        instruction: chatInput,
+        currentUI: uiStyle
+      });
+
+      if (response.data?.styleOverrides) {
+        setUiStyle(prev => ({ ...prev, ...response.data.styleOverrides }));
+        showFeedback("🎨 UI updated!", "success");
+      } else {
+        throw new Error("Invalid response from AI");
+      }
+    } catch (err) {
+      console.error("Chat error:", err);
+      showFeedback("❌ Could not apply change. Try rephrasing.", "error");
+    } finally {
+      setLoading(false);
+      setChatInput('');
+    }
+  };
+
   const handleReset = () => {
     setDescription('');
     setParsedData(null);
     setError(null);
     setSuccess(null);
+    setChatInput('');
   };
 
   return (
@@ -70,8 +103,8 @@ function App() {
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       maxWidth: '1200px',
       margin: '0 auto',
-      backgroundColor: '#121212', // Dark charcoal background
-      color: '#e0e0e0', // Off-white text
+      backgroundColor: '#121212',
+      color: '#e0e0e0',
       minHeight: '100vh',
       width: '100%',
     }}>
@@ -114,13 +147,13 @@ function App() {
           color: '#a0a0a0',
           fontWeight: '500'
         }}>
-          Describe your app. We’ll generate a mock UI.
+          Describe your app. We’ll generate a mock UI — then customize it with AI!
         </p>
       </div>
 
       {/* Input Section */}
       <div style={{
-        background: '#1e1e1e', // ✅ Dark gray surface
+        background: '#1e1e1e',
         padding: '3rem',
         borderRadius: '20px',
         boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
@@ -167,7 +200,6 @@ function App() {
           />
         </div>
 
-        {/* Buttons */}
         <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
           <button
             onClick={handleSubmit}
@@ -229,7 +261,8 @@ function App() {
           padding: '3rem',
           borderRadius: '20px',
           boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
-          border: '1px solid #2d2d2d'
+          border: '1px solid #2d2d2d',
+          marginBottom: '3rem'
         }}>
           {/* Requirements Summary */}
           <div style={{ marginBottom: '3rem' }}>
@@ -305,13 +338,13 @@ function App() {
                     key={role}
                     style={{
                       padding: '0.875rem 2rem',
-                      fontSize: '1.1rem',
+                      fontSize: uiStyle.fontSize,
                       fontWeight: '600',
                       cursor: 'pointer',
                       backgroundColor: '#2a2a2a',
                       color: '#00f2fe',
                       border: '2px solid #00f2fe',
-                      borderRadius: '50px',
+                      borderRadius: uiStyle.borderRadius,
                       transition: 'all 0.2s',
                     }}
                     onMouseEnter={(e) => {
@@ -353,19 +386,19 @@ function App() {
                     style={{
                       border: '2px solid #2d2d2d',
                       padding: '2.5rem',
-                      borderRadius: '16px',
-                      background: '#2a2a2a',
+                      borderRadius: uiStyle.borderRadius,
+                      background: uiStyle.formBackground,
                       transition: 'transform 0.2s, box-shadow 0.2s',
                     }}
                     onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.3)'}
                     onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)'}
                   >
                     <h4 style={{
-                      fontSize: '1.6rem',
+                      fontSize: uiStyle.fontSize,
                       fontWeight: '700',
                       color: '#ffffff',
                       margin: '0 0 2rem 0',
-                      borderBottom: '3px solid #4facfe',
+                      borderBottom: `3px solid ${uiStyle.buttonColor}`,
                       paddingBottom: '0.5rem',
                       display: 'inline-block'
                     }}>{entity} Form</h4>
@@ -381,7 +414,7 @@ function App() {
                       return fields.map((field, idx) => (
                         <div key={idx} style={{ marginBottom: '1.5rem' }}>
                           <label style={{
-                            fontSize: '1.1rem',
+                            fontSize: uiStyle.fontSize,
                             fontWeight: '600',
                             color: '#e0e0e0',
                             marginBottom: '0.75rem',
@@ -398,20 +431,11 @@ function App() {
                               width: '100%',
                               maxWidth: '350px',
                               padding: '0.875rem',
-                              fontSize: '1.1rem',
+                              fontSize: uiStyle.fontSize,
                               border: '2px solid #2d2d2d',
-                              borderRadius: '10px',
+                              borderRadius: uiStyle.borderRadius,
                               backgroundColor: '#333333',
                               color: '#e0e0e0',
-                              transition: 'border-color 0.2s, box-shadow 0.2s',
-                            }}
-                            onFocus={(e) => {
-                              e.target.style.borderColor = '#4facfe';
-                              e.target.style.boxShadow = '0 0 0 3px rgba(79, 172, 254, 0.2)';
-                            }}
-                            onBlur={(e) => {
-                              e.target.style.borderColor = '#2d2d2d';
-                              e.target.style.boxShadow = 'none';
                             }}
                           />
                         </div>
@@ -422,23 +446,22 @@ function App() {
                       style={{
                         marginTop: '1.5rem',
                         padding: '0.875rem 2.5rem',
-                        fontSize: '1.1rem',
+                        fontSize: uiStyle.fontSize,
                         fontWeight: '700',
                         backgroundColor: '#2a2a2a',
-                        color: '#4ade80',
-                        border: '2px solid #4ade80',
-                        borderRadius: '12px',
+                        color: uiStyle.buttonColor,
+                        border: `2px solid ${uiStyle.buttonColor}`,
+                        borderRadius: uiStyle.borderRadius,
                         cursor: 'pointer',
-                        transition: 'all 0.2s',
                       }}
                       onMouseEnter={(e) => {
-                        e.target.style.backgroundColor = '#4ade80';
+                        e.target.style.backgroundColor = uiStyle.buttonColor;
                         e.target.style.color = '#121212';
                         e.target.style.transform = 'translateY(-2px)';
                       }}
                       onMouseLeave={(e) => {
                         e.target.style.backgroundColor = '#2a2a2a';
-                        e.target.style.color = '#4ade80';
+                        e.target.style.color = uiStyle.buttonColor;
                         e.target.style.transform = 'translateY(0)';
                       }}
                     >
@@ -448,6 +471,53 @@ function App() {
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Chat Customizer */}
+      {parsedData && (
+        <div style={{
+          background: '#1e1e1e',
+          padding: '2rem',
+          borderRadius: '16px',
+          border: '1px solid #2d2d2d'
+        }}>
+          <h3 style={{ color: '#ffffff', marginBottom: '1rem', fontSize: '1.4rem' }}>🎨 Customize UI with AI</h3>
+          <p style={{ color: '#a0a0a0', marginBottom: '1rem', fontSize: '0.95rem' }}>
+            Try: <em>"Make forms darker"</em>, <em>"Green save buttons"</em>, <em>"Larger font"</em>
+          </p>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <input
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              placeholder="e.g., Make background black and buttons red..."
+              style={{
+                flex: 1,
+                padding: '0.75rem',
+                borderRadius: '10px',
+                border: '2px solid #2d2d2d',
+                backgroundColor: '#2a2a2a',
+                color: '#e0e0e0',
+                fontSize: '1rem'
+              }}
+              onKeyDown={(e) => e.key === 'Enter' && handleChatSubmit()}
+            />
+            <button
+              onClick={handleChatSubmit}
+              disabled={loading}
+              style={{
+                padding: '0.75rem 1.5rem',
+                backgroundColor: '#4facfe',
+                color: '#121212',
+                border: 'none',
+                borderRadius: '10px',
+                fontWeight: '600',
+                cursor: loading ? 'not-allowed' : 'pointer'
+              }}
+            >
+              Apply
+            </button>
           </div>
         </div>
       )}
